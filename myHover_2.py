@@ -11,19 +11,16 @@ Z = 0.5
 goal=[0,0.5,Z]
 goal_for_2=[0.5,0.5,Z]
 
-class cfaction():
-    def __init__(self):
-        pass
-    def allcfsaction(self,goal,dt,flie_num):
-        cf4=allcfs.crazyfliesById[flie_num]
-        pos=cf4.position()# current position
-        dist=np.array(goal)-np.array(pos)#to control speed calculate the distance to goal
-        n=np.linalg.norm(dist) 
-        dist=dist/n # normalize the distance vector
-        micro_distance=dt*(0.1)# 0.1 m/s * time=distance need to move in time dt
-        current_goal=micro_distance*dist+pos # current goal in time dt
-        cf4.goTo(current_goal,0,duration=micro_distance/0.05,groupMask=flie_num)
-        return pos # return current position
+def allcfsaction(goal,dt,flie_num):
+    cf4=allcfs.crazyfliesById[flie_num]
+    pos=cf4.position()# current position
+    dist=np.array(pos)-np.array(goal)#to control speed calculate the distance to goal
+    n=np.linalg.norm(dist) 
+    dist=dist/n # normalize the distance vector
+    micro_distance=dt*(0.1)# 0.1 m/s * time=distance need to move in time dt
+    current_goal=micro_distance*dist+pos # current goal in time dt
+    cf4.goTo(current_goal,0,duration=micro_distance/0.05,groupMask=flie_num)
+    return pos # return current position
         
 
 if __name__ == "__main__":
@@ -48,12 +45,10 @@ if __name__ == "__main__":
     cf4_pos=np.array(allcfs.crazyfliesById[4].position())# get the initial pos for cf4
     cf2_pos=np.array(allcfs.crazyfliesById[2].position())# get the initial pos for cf2
     dt=0.025 ## the dt for the first loop
-    cf_4=cfaction()
-    cf_2=cfaction()
     current_time=timeHelper.time()
     while np.linalg.norm(cf4_pos-goal)>0.1:
-        pos4=cf_4.allcfsaction(goal,dt,4)
-        pos2=cf_2.allcfsaction(goal_for_2,dt,2)
+        pos4=allcfsaction(goal,dt,4)
+        pos2=allcfsaction(goal_for_2,dt,2)
         update_time=timeHelper.time()
         dt=update_time-current_time
         current_time=update_time
