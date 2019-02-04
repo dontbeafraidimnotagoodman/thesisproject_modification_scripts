@@ -50,12 +50,10 @@ class cfAct:
     cf=allcfs.crazyfliesById[self.ID]
     pos=cf.position()
     pos[2]=Z ## fixed height
-    self.current_pos=pos
     return pos
   ## return P'(x) which is based on biased position
   def getDesirePos(self):
     pos=self.get_pos()
-    pos=pos+self.offset
     return pos_calculator(my_pose=pos,designated_pos=self.desire_pos,r=self.R)
     
   def update_parameter(self):
@@ -66,14 +64,49 @@ class cfAct:
     self.target_pos=cf_target.position()
     if (np.linalg.norm(pos-self.desire_pos))>self.R:
         self.resultDesirePos=self.getDesirePos()+self.offset
+        ## offset willhave no effect DesirePos due to this offset here
     else:
         self.resultDesirePos=pos
         ## changed velocity to normalized form
+        
+  def update_param_initial(self):
+    pos=self.get_pos()
+    pos=pos+self.offset
+    self.current_pos=pos
+    if (np.linalg.norm(pos-self.desire_pos))>self.R:
+        self.resultDesirePos=self.getDesirePos()+self.offset
+        self.target_pos=self.getDesirePos()+self.offset
+        ## due to this offset added here, offset has no effect on the first cf
+    else:
+        self.resultDesirePos=pos
+        self.target_pos=pos
+    
+    ##update parameter for the first crazyflie 
+    ## it will not track other cf, but track a static point
+    
+    
   def get_cf_v(self):
     self.update_parameter()
-    if np.linalg.norm(self.target_pos-self.current_pos)==0:
+    if np.linalg.norm(self.target_pos-self.current_pos)==0 and np.linalg.norm(self.target_pos-self.current_pos)!=0:
       cf_v=0.2*((self.target_pos-self.current_pos))+0.1*((self.resultDesirePos-self.current_pos)/np.linalg.norm(self.resultDesirePos-self.current_pos))
-    elif np.linalg.norm(self.resultDesirePos-self.current_pos)==0:
+    elif np.linalg.norm(self.resultDesirePos-self.current_pos)==0 and np.linalg.norm(self.target_pos-self.current_pos)!=0:
+      cf_v=0.2*((self.target_pos-self.current_pos)/np.linalg.norm(self.target_pos-self.current_pos))+0.1*((self.resultDesirePos-self.current_pos))
+    elif np.linalg.norm(self.resultDesirePos-self.current_pos)==0 and np.linalg.norm(self.target_pos-self.current_pos)==0:
+      cf_v=0.2*((self.target_pos-self.current_pos))+0.1*((self.resultDesirePos-self.current_pos))
+    else:
+      cf_v=0.2*((self.target_pos-self.current_pos)/np.linalg.norm(self.target_pos-self.current_pos))+0.1*((self.resultDesirePos-self.current_pos)/np.linalg.norm(self.resultDesirePos-self.current_pos))
+    cf_v[2]=0
+    self.cf_v=cf_v
+    return cf_v
+  
+  ## a*()+b*(), offset have no effct on () followed b, but have effect on () followed a
+  ## one must calculate offset himself before set resultDesirePos due to this bug
+  
+  def get_cf_v_initial(self):
+    self.update_param_initial()
+    if np.linalg.norm(self.target_pos-self.current_pos)==0 and np.linalg.norm(self.target_pos-self.current_pos)!=0:
+      cf_v=0.2*((self.target_pos-self.current_pos))+0.1*((self.resultDesirePos-self.current_pos)/np.linalg.norm(self.resultDesirePos-self.current_pos))
+    elif np.linalg.norm(self.resultDesirePos-self.current_pos)==0 and np.linalg.norm(self.target_pos-self.current_pos)!=0:
       cf_v=0.2*((self.target_pos-self.current_pos)/np.linalg.norm(self.target_pos-self.current_pos))+0.1*((self.resultDesirePos-self.current_pos))
     elif np.linalg.norm(self.resultDesirePos-self.current_pos)==0 and np.linalg.norm(self.target_pos-self.current_pos)==0:
       cf_v=0.2*((self.target_pos-self.current_pos))+0.1*((self.resultDesirePos-self.current_pos))
@@ -92,7 +125,7 @@ if __name__ == "__main__":
     timeHelper = swarm.timeHelper
     allcfs = swarm.allcfs
     allcfs.takeoff(targetHeight=Z, duration=1.0 + Z)
-    timeHelper.sleep(3)
+    timeHelper.sleep(2)
     dt=0
     t_now=rospy.Time.now()
     cf_v3=np.array([0,0,0])
@@ -101,10 +134,10 @@ if __name__ == "__main__":
     cf_v7=np.array([0,0,0])
     ## set every desire_pos  and desire_R to be the same in the first experiment
     ## def __init__(self,ID,desire_pos,desire_R,target_ID,offset):
-    Agent3=cfAct(3,np.array([0,-1,0]),1,7,np.array([0,-1,0]))
-    Agent4=cfAct(4,np.array([0,0,0]),1,3,np.array([-1,0,0]))### need to change
-    Agent5=cfAct(5,np.array([1,0,0]),1,4,np.array([0,1,0]))### need to change
-    Agent7=cfAct(7,np.array([1,-1,0]),1,5,np.array([1,0,0]))### need to change
+    Agent3=cfAct(3,np.array([0,0,0]),1,7,np.array([0,-1,0]))
+    Agent4=cfAct(4,np.array([1,0,0]),1,3,np.array([-1,0,0]))### need to change
+    Agent5=cfAct(5,np.array([1,-1,0]),1,4,np.array([0,1,0]))### need to change
+    Agent7=cfAct(7,np.array([0,-1,0]),1,5,np.array([1,0,0]))### need to change
         
         
     ## bigragh forms a circle
@@ -113,7 +146,7 @@ if __name__ == "__main__":
       if dt>1:
         dt=0
         t_now=t_last
-        cf_v3=Agent3.get_cf_v()
+        cf_v3=Agent3.get_cf_v_initial()
         cf_v4=Agent4.get_cf_v()
         cf_v5=Agent5.get_cf_v()
         cf_v7=Agent7.get_cf_v()
@@ -136,6 +169,7 @@ if __name__ == "__main__":
       pos7=cf7.position()
       pos7[2]=Z
       cf7.cmdFullState(pos=pos7,vel=cf_v7,acc=np.array([0.0,0.0,0.0]),yaw=0,omega=np.array([0,0,0]))
+      print(cf_v3)
       button_pressed = swarm.input.checkIfButtonIsPressed()
       if button_pressed == True:
             break
@@ -146,5 +180,4 @@ if __name__ == "__main__":
     cf4.cmdStop()
     cf5.cmdStop()
     cf7.cmdStop()
-
       
