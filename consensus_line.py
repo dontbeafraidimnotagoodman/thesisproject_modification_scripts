@@ -99,7 +99,7 @@ class cfAct:
       norm_j=np.linalg.norm(target_pos)
       add_norm=add_norm+norm_j
     add_norm=add_norm+np.linalg.norm(Op_point_group[self.ID])
-    self.add_phi=0.2*add_norm*np.array(self.B_vector)
+    self.add_phi=0.1*add_norm*np.array(self.B_vector)
   def update_cf_v(self,desire_pos):
     self.get_cf_v(desire_pos)
     self.phi_restriction()
@@ -116,45 +116,45 @@ if __name__ == "__main__":
   dt=0
   t_now=rospy.Time.now()## deal with time spent per loop
   T=rospy.Time.now()## deal with program running time
-  cf_v3=np.array([0,0,0])
+  cf_v2=np.array([0,0,0])
   cf_v4=np.array([0,0,0])
   cf_v5=np.array([0,0,0])
   cf_v7=np.array([0,0,0])
   ##def init(self,ID,target_ID,offset,master_point,a,b,h)
-  Agent3=cfAct(3,[7,4],np.array([0,0,0]),False,0.1,0.5,0.4*np.array([[0,-1,0],[1,0,0]]))
-  Agent4=cfAct(4,[3,5],np.array([-1,0,0]),False,0.1,0.5,0.4*np.array([[-1,0,0],[0,-1,0]]))
-  Agent5=cfAct(5,[4],np.array([-1,1,0]),False,0.1,0.5,0.4*np.array([[0,1,0]]))
-  Agent7=cfAct(7,[3],np.array([0,1,0]),False,0.1,0.5,0.4*np.array([[0,1,0]]))
+  Agent2=cfAct(2,[7,4],np.array([0,0,0]),False,0.1,0.4,0.6*np.array([[0,-1,0],[1,0,0]]))
+  Agent4=cfAct(4,[2,5],np.array([-1,0,0]),False,0.1,0.4,0.6*np.array([[-1,0,0],[0,-1,0]]))
+  Agent5=cfAct(5,[4],np.array([-1,1,0]),False,0.1,0.4,0.6*np.array([[0,1,0]]))
+  Agent7=cfAct(7,[2],np.array([0,1,0]),False,0.1,0.4,0.6*np.array([[0,1,0]]))
   virtual_target_pos=np.array([0,0,Z])## change to circle start point
     
-  Op_point_3=np.array([0,0,Z])
+  Op_point_2=np.array([0,0,Z])
   Op_point_4=np.array([0,0,Z])
   Op_point_5=np.array([0,0,Z])
   Op_point_7=np.array([0,0,Z])
-  r3=0.25
+  r2=0.25
   r2=0.75
   r4=0.5
   r1=1
   ## for line trajectory algorithm
-  Op_point_group={3:Op_point_3,
+  Op_point_group={2:Op_point_2,
                  4:Op_point_4,
                  5:Op_point_5,
                  7:Op_point_7}
     
   while(True):
-    if dt>0.1:
+    if dt>0.01:
       dt=0
       t_now=t_last
-      cf_v3=Agent3.update_cf_v(Op_point_3)
+      cf_v2=Agent2.update_cf_v(Op_point_2)
       cf_v4=Agent4.update_cf_v(Op_point_4)
       cf_v5=Agent5.update_cf_v(Op_point_5)
       cf_v7=Agent7.update_cf_v(Op_point_7)
       DT=(rospy.Time.now()-T).to_sec()
-      Op_point_3=cal_Line(0.1*DT,1.25)
-      Op_point_4=cal_Line(0.1*DT,2.5)
-      Op_point_5=cal_Line(0.1*DT,2.5)
-      Op_point_7=cal_Line(0.1*DT,0.625)
-      Op_point_group[3]=Op_point_3
+      Op_point_2=cal_Line(0.1*DT,4.25)
+      Op_point_4=cal_Line(0.1*DT,4.0)
+      Op_point_5=cal_Line(0.1*DT,4.5)
+      Op_point_7=cal_Line(0.1*DT,3.25)
+      Op_point_group[2]=Op_point_2
       Op_point_group[4]=Op_point_4
       Op_point_group[5]=Op_point_5
       Op_point_group[7]=Op_point_7
@@ -168,10 +168,10 @@ if __name__ == "__main__":
         
     t_last=rospy.Time.now()
     dt=(t_last-t_now).to_sec()
-    cf3=allcfs.crazyfliesById[3]
-    pos3=cf3.position()
-    pos3[2]=Z
-    cf3.cmdFullState(pos=pos3,vel=cf_v3,acc=np.array([0.0,0.0,0.0]),yaw=0,omega=np.array([0,0,0]))
+    cf2=allcfs.crazyfliesById[2]
+    pos2=cf2.position()
+    pos2[2]=Z
+    cf2.cmdFullState(pos=pos2,vel=cf_v2,acc=np.array([0.0,0.0,0.0]),yaw=0,omega=np.array([0,0,0]))
     cf4=allcfs.crazyfliesById[4]
     pos4=cf4.position()
     pos4[2]=Z
@@ -190,7 +190,7 @@ if __name__ == "__main__":
 
 
   timeHelper.sleep(5)
-  cf3.cmdStop()
+  cf2.cmdStop()
   cf4.cmdStop()
   cf5.cmdStop()
   cf7.cmdStop()
