@@ -31,7 +31,7 @@ def normalize(v): ## this normalize function needs further tests
 
 
 class cfAct:
-  def __init__(self,ID,target_ID,offset,master_point,a,b,h):
+  def __init__(self,ID,target_ID,offset,master_point,a,b,h,phi_factor):
     self.ID=ID
     self.desire_pos=None
     self.target_ID=target_ID ## list (1*n)
@@ -46,6 +46,7 @@ class cfAct:
     self.h=h## act as offset between neighbors because its different from offset
     self.add_phi=None
     self.B_vector=None
+    self.phi_factor=phi_factor
             ## self.h is also a list with the same order of self.target_ID
     ## get_pos will return the real time pos everytime you call get_posdef get_pos(self):
   def get_pos(self):
@@ -99,7 +100,7 @@ class cfAct:
       norm_j=np.linalg.norm(target_pos)
       add_norm=add_norm+norm_j
     add_norm=add_norm+np.linalg.norm(Op_point_group[self.ID])
-    self.add_phi=0.1*add_norm*np.array(self.B_vector)
+    self.add_phi=self.phi_factor*add_norm*np.array(self.B_vector)
   def update_cf_v(self,desire_pos):
     self.get_cf_v(desire_pos)
     self.phi_restriction()
@@ -120,11 +121,11 @@ if __name__ == "__main__":
   cf_v4=np.array([0,0,0])
   cf_v5=np.array([0,0,0])
   cf_v7=np.array([0,0,0])
-  ##def init(self,ID,target_ID,offset,master_point,a,b,h)
-  Agent2=cfAct(2,[7,4],np.array([0,0,0]),False,0.1,0.4,0.6*np.array([[0,-1,0],[1,0,0]]))
-  Agent4=cfAct(4,[2,5],np.array([-1,0,0]),False,0.1,0.4,0.6*np.array([[-1,0,0],[0,-1,0]]))
-  Agent5=cfAct(5,[4],np.array([-1,1,0]),False,0.1,0.4,0.6*np.array([[0,1,0]]))
-  Agent7=cfAct(7,[2],np.array([0,1,0]),False,0.1,0.4,0.6*np.array([[0,1,0]]))
+  ##def init(self,ID,target_ID,offset,master_point,a,b,h,phi_factor)
+  Agent2=cfAct(2,[7,4],np.array([0,0,0]),False,0.1,0.2,0.4*np.array([[0,-1,0],[1,0,0]]),0.05)
+  Agent4=cfAct(4,[2,5],np.array([-1,0,0]),False,0.1,0.2,0.4*np.array([[-1,0,0],[0,-1,0]]),0.05)
+  Agent5=cfAct(5,[4],np.array([-1,1,0]),False,0.1,0.4,0.6*np.array([[0,1,0]]),0.1)
+  Agent7=cfAct(7,[2],np.array([0,1,0]),False,0.1,0.6,0.6*np.array([[0,1,0]]),0.1)
   virtual_target_pos=np.array([0,0,Z])## change to circle start point
     
   Op_point_2=np.array([0,0,Z])
