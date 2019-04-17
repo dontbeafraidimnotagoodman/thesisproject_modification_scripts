@@ -88,7 +88,7 @@ class cfAct:
     return self.add_phi+self.cf_v
 
 if __name__ == "__main__":
-    Z=0.8
+    Z=0.7
     H=0
     cf_v2=np.array([0.0,0.0,0.0])
     cf_v4=np.array([0.0,0.0,0.0])
@@ -193,7 +193,7 @@ if __name__ == "__main__":
         position_5, quaternion = tf.lookupTransform("/world", "/vicon/cftarget_5/cftarget_5", rospy.Time(0))
         v_tar_5=(np.array(position_5)-np.array(position_last_5))/dt
         #######right here change v_tar[2]
-        Op_point_1=np.array([position_last_5[0],position_last_5[1],Z])+np.array([v_tar_5[0],v_tar_5[1],0])
+        Op_point_1=np.array([position_last_5[0]+0.2,position_last_5[1],Z])+np.array([v_tar_5[0],v_tar_5[1],0])
         Op_point_group[1]=Op_point_1
         cf_v_1=Agent1.update_cf_v(Op_point_1)
         ######here change height velocity
@@ -214,41 +214,47 @@ if __name__ == "__main__":
         temp_cf=cf8.position()
         if(np.linalg.norm(np.array([temp_cf[0],temp_cf[1]])-np.array([position_last_6[0],position_last_6[1]]))<0.3):
           temp_h=cf8.position()
-          H=position_last_6[2]-temp_h[2]
+          H=0
           
       if count==0:
         cf2=allcfs.crazyfliesById[2]
         pos2=cf2.position()
+	pos2[2]=Z
         cf2.cmdFullState(pos=pos2,vel=cf_v2,acc=np.array([0.0,0.0,6.0]),yaw=0,omega=np.array([0,0,0]))
         count=count+1
         
       if count==1:
         cf4=allcfs.crazyfliesById[4]
         pos4=cf4.position()
+	pos4[2]=Z
         cf4.cmdFullState(pos=pos4,vel=cf_v4,acc=np.array([0.0,0.0,6.0]),yaw=0,omega=np.array([0,0,0]))
         count=count+1
         
       if count==2:
         cf5=allcfs.crazyfliesById[5]
         pos5=cf5.position()
-        cf5.cmdFullState(pos=pos5,vel=cf_v5,acc=np.array([0.0,0.0,7.0]),yaw=0,omega=np.array([0,0,0]))
+        pos5[2]=Z
+        cf5.cmdFullState(pos=pos5,vel=cf_v5,acc=np.array([0.0,0.0,6.0]),yaw=0,omega=np.array([0,0,0]))
         count=count+1
   
       if count==3:
         cf7=allcfs.crazyfliesById[7]
         pos7=cf7.position()
+        pos7[2]=Z
         cf7.cmdFullState(pos=pos7,vel=cf_v7,acc=np.array([0.0,0.0,6.0]),yaw=0,omega=np.array([0,0,0]))
         count=count+1
         
       if count==4:
         cf1=allcfs.crazyfliesById[1]
         pos1=cf1.position()
+        pos1[2]=Z
         cf1.cmdFullState(pos=pos1,vel=cf_v1,acc=np.array([0.0,0.0,6.0]),yaw=0,omega=np.array([0,0,0]))
         count=count+1
         
       if count==5:
         cf8=allcfs.crazyfliesById[8]
         pos8=cf8.position()
+        pos8[2]=Z
         cf8.cmdFullState(pos=pos8,vel=cf_v8,acc=np.array([0.0,0.0,6.0]),yaw=0,omega=np.array([0,0,0]))
         count=0
         
